@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useToast } from '../../context/TostContext.jsx';
 import { StatusBadge } from '../../components/common/Badge.jsx';
+import CaseDetailModal from '../../components/cases/CaseDetailModel.jsx';
 
 export default function StoCases({ cases, stages, data, currentUser }) {
   const toast = useToast();
@@ -17,6 +18,9 @@ export default function StoCases({ cases, stages, data, currentUser }) {
   const [editingStageFor, setEditingStageFor] = useState(null);
   const [stageSelection, setStageSelection] = useState('');
   const [stageSubmitting, setStageSubmitting] = useState(false);
+
+  const [selectedCaseId, setSelectedCaseId] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const formatCurrency = (amount) => `₹${amount.toLocaleString('en-IN')}`;
 
@@ -205,6 +209,24 @@ export default function StoCases({ cases, stages, data, currentUser }) {
 
                       <button
                         onClick={() => {
+                          setSelectedCaseId(caseItem.id);
+                          setShowDetailModal(true);
+                        }}
+                        style={{
+                          background: '#8b5cf6',
+                          border: 'none',
+                          borderRadius: '4px',
+                          color: '#fff',
+                          padding: '6px 10px',
+                          cursor: 'pointer',
+                          fontSize: '12px'
+                        }}
+                      >
+                        View Progress
+                      </button>
+
+                      <button
+                        onClick={() => {
                           setEditingStageFor(caseItem.id);
                           setStageSelection(caseItem.actionStage || '');
                         }}
@@ -363,6 +385,19 @@ export default function StoCases({ cases, stages, data, currentUser }) {
             </div>
           </div>
         </div>
+      )}
+
+      {showDetailModal && selectedCaseId && (
+        <CaseDetailModal
+          caseId={selectedCaseId}
+          onClose={() => {
+            setShowDetailModal(false);
+            setSelectedCaseId(null);
+          }}
+          data={data}
+          stages={stages}
+          currentUser={currentUser}
+        />
       )}
     </div>
   );

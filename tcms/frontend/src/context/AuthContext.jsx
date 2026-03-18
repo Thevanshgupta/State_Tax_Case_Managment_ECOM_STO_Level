@@ -1,9 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DEMO_MODE } from '../constants/index.js';
 import { mockLogin } from '../mock/handlers.js';
 import * as authApi  from '../api/auth.api.js';
-
-const AuthCtx = createContext(null);
+import { AuthCtx } from './authContext.js';
 
 export function AuthProvider({ children }) {
   const [user,    setUser]    = useState(null);
@@ -49,9 +48,3 @@ export function AuthProvider({ children }) {
     </AuthCtx.Provider>
   );
 }
-
-export const useAuth = () => {
-  const ctx = useContext(AuthCtx);
-  if (!ctx) throw new Error('useAuth must be inside <AuthProvider>');
-  return ctx;
-};

@@ -1,8 +1,16 @@
+import { useState } from 'react';
+import { useToast } from '../../context/TostContext.jsx';
 import { StatusBadge } from '../../components/common/Badge.jsx';
+import CaseDetailModal from '../../components/cases/CaseDetailModel.jsx';
+import CSVUploadModal from '../../components/CSVUploadModal.jsx';
 
-export default function AdminCases({ cases }) {
+export default function AdminCases({ cases, stages, data, currentUser }) {
+  const toast = useToast();
+  const [selectedCaseId, setSelectedCaseId] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showCSVModal, setShowCSVModal] = useState(false);
+
   const formatCurrency = (amount) => `₹${amount.toLocaleString('en-IN')}`;
-
   return (
     <div>
       <div className="page-hdr">
@@ -18,6 +26,21 @@ export default function AdminCases({ cases }) {
             <span style={{ fontSize: '14px', fontWeight: 600, color: '#374151' }}>
               Total Cases: {cases?.length || 0}
             </span>
+            <button
+              onClick={() => setShowCSVModal(true)}
+              style={{
+                background: '#8b5cf6',
+                border: 'none',
+                borderRadius: '6px',
+                color: '#fff',
+                padding: '8px 16px',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: 600,
+              }}
+            >
+              📤 Upload CSV
+            </button>
           </div>
         </div>
 
@@ -34,6 +57,7 @@ export default function AdminCases({ cases }) {
                 <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '.05em' }}>Total Amount</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '.05em' }}>Assigned To</th>
                 <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '.05em' }}>Flagged</th>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '.05em' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -66,6 +90,26 @@ export default function AdminCases({ cases }) {
                   <td style={{ padding: '12px 16px', textAlign: 'center' }}>
                     {caseItem.isFlagged && <span style={{ color: '#ef4444', fontSize: '16px' }}>🚩</span>}
                   </td>
+                  <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                    <button
+                      onClick={() => {
+                        setSelectedCaseId(caseItem.id);
+                        setShowDetailModal(true);
+                      }}
+                      style={{
+                        background: '#8b5cf6',
+                        border: 'none',
+                        borderRadius: '4px',
+                        color: '#fff',
+                        padding: '6px 14px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: 600
+                      }}
+                    >
+                      View Details
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -80,6 +124,37 @@ export default function AdminCases({ cases }) {
           </div>
         )}
       </div>
+
+      {showCSVModal && (
+        <CSVUploadModal
+          onClose={() => setShowCSVModal(false)}
+          onSuccess={async (caseData) => {
+            try {
+              for (const c of caseData) {
+                await data.create(c);
+              }
+              toast(`Successfully imported ${caseData.length} cases!`, 'success');
+            } catch (error) {
+              toast('Failed to import some cases: ' + error.message, 'error');
+            }
+          }}
+          stages={stages}
+          currentUser={currentUser}
+        />
+      )}
+
+      {showDetailModal && selectedCaseId && (
+        <CaseDetailModal
+          caseId={selectedCaseId}
+          onClose={() => {
+            setShowDetailModal(false);
+            setSelectedCaseId(null);
+          }}
+          data={data}
+          stages={stages}
+          currentUser={currentUser}
+        />
+      )}
     </div>
   );
 }
