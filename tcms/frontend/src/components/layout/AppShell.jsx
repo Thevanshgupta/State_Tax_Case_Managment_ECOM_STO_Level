@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Sidebar  from './Sidebar.jsx';
 import Header   from './Header.jsx';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { useAuth } from '../../context/useAuth.js';
 import { useData } from '../../hooks/useData.js';
 
 /* Admin pages */
